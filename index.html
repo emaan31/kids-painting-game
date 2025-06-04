@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kids Painting Game</title>
   <style>
     body {
@@ -12,7 +12,7 @@
       background-color: #f5f5f5;
     }
     #sidebar {
-      width: 120px;
+      width: 140px;
       background: #eee;
       display: flex;
       flex-direction: column;
@@ -26,10 +26,6 @@
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid #888;
-    }
-    #music-controls {
-      margin-top: auto;
-      text-align: center;
     }
     canvas {
       border: 2px solid #333;
@@ -51,19 +47,57 @@
       cursor: pointer;
       border-radius: 5px;
     }
+    #music-controls {
+      margin-top: auto;
+      text-align: center;
+    }
+    button, select {
+      margin: 5px auto;
+      padding: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <div id="sidebar">
+    <!-- Colors -->
     <div class="color-option" style="background: red;" onclick="setColor('red')"></div>
     <div class="color-option" style="background: blue;" onclick="setColor('blue')"></div>
     <div class="color-option" style="background: green;" onclick="setColor('green')"></div>
     <div class="color-option" style="background: yellow;" onclick="setColor('yellow')"></div>
     <div class="color-option" style="background: pink;" onclick="setColor('pink')"></div>
     <div class="color-option" style="background: black;" onclick="setColor('black')"></div>
+    <div class="color-option" style="background: purple;" onclick="setColor('purple')"></div>
+    <div class="color-option" style="background: brown;" onclick="setColor('brown')"></div>
+    <div class="color-option" style="background: orange;" onclick="setColor('orange')"></div>
 
+    <!-- New Tools -->
+    <button id="clearButton">🧼 Clear</button>
+    <button id="dropper">🎯 Dropper</button>
+    <label>🖌️ Brush:
+      <select id="brushSize">
+        <option value="4">Small</option>
+        <option value="8" selected>Medium</option>
+        <option value="16">Large</option>
+      </select>
+    </label>
+    <label>🎶 Music:
+      <select id="musicSelector">
+        <option value="smooth-music.mp3">Smooth</option>
+        <option value="fun-beat.mp3">Fun Beat</option>
+        <option value="calm.mp3">Calm</option>
+      </select>
+    </label>
+    <div>
+      <button onclick="addSticker('🌟')">🌟</button>
+      <button onclick="addSticker('❤️')">❤️</button>
+      <button onclick="addSticker('⭐')">⭐</button>
+    </div>
+
+    <!-- Music Controls -->
     <div id="music-controls">
-      <button onclick="toggleMusic()">🎵</button><br>
+      <button onclick="toggleMusic()">🎵</button><br />
       <input type="range" min="0" max="1" step="0.01" value="0.5" onchange="setVolume(this.value)">
     </div>
   </div>
@@ -71,16 +105,16 @@
   <canvas id="paintCanvas" width="800" height="600"></canvas>
 
   <div id="levels">
-    <button class="level-btn" onclick="loadLevel('horse')">Level 1: Horse</button>
-    <button class="level-btn" onclick="loadLevel('cycle')">Level 2: Cycle</button>
-    <button class="level-btn" onclick="loadLevel('balloons')">Level 3: Balloons</button>
-    <button class="level-btn" onclick="loadLevel('stars')">Level 4: Stars</button>
-    <button class="level-btn" onclick="loadLevel('mountain')">Level 5: Mountain</button>
-    <button class="level-btn" onclick="loadLevel('car')">Level 6: Car</button>
-    <button class="level-btn" onclick="loadLevel('clouds')">Level 7: Clouds</button>
-    <button class="level-btn" onclick="loadLevel('mobile')">Level 8: Mobile Phone</button>
-    <button class="level-btn" onclick="loadLevel('laptop')">Level 9: Laptop</button>
-    <button class="level-btn" onclick="loadLevel('motorcycle')">Level 10: Motorcycle</button>
+    <button class="level-btn" onclick="loadLevel('Snail')">Level 1: Snail</button>
+    <button class="level-btn" onclick="loadLevel('crocodile')">Level 2: Crocodile</button>
+    <button class="level-btn" onclick="loadLevel('butterfly')">Level 3: Butterfly</button>
+    <button class="level-btn" onclick="loadLevel('sun')">Level 4: Sun</button>
+    <button class="level-btn" onclick="loadLevel('house')">Level 5: House</button>
+    <button class="level-btn" onclick="loadLevel('tree')">Level 6: Tree</button>
+    <button class="level-btn" onclick="loadLevel('apple')">Level 7: Apple</button>
+    <button class="level-btn" onclick="loadLevel('jug')">Level 8: Jug</button>
+    <button class="level-btn" onclick="loadLevel('daniele-levis-pelusi')">Level 9</button>
+    <button class="level-btn" onclick="loadLevel('istockphoto')">Level 10</button>
   </div>
 
   <audio id="bgMusic" loop>
@@ -92,6 +126,7 @@
     const ctx = canvas.getContext('2d');
     let painting = false;
     let currentColor = 'black';
+    ctx.lineWidth = 8;
 
     function setColor(color) {
       currentColor = color;
@@ -108,11 +143,12 @@
       const x = e.offsetX;
       const y = e.offsetY;
       ctx.beginPath();
-      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.arc(x, y, ctx.lineWidth / 2, 0, Math.PI * 2);
       ctx.fill();
     }
 
     const bgMusic = document.getElementById('bgMusic');
+    const musicSelector = document.getElementById('musicSelector');
     bgMusic.volume = 0.5;
     bgMusic.play();
 
@@ -128,6 +164,11 @@
       bgMusic.volume = val;
     }
 
+    musicSelector.addEventListener('change', () => {
+      bgMusic.src = `music/${musicSelector.value}`;
+      bgMusic.play();
+    });
+
     function loadLevel(levelName) {
       const img = new Image();
       img.src = `levels/${levelName}.png`;
@@ -135,6 +176,46 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
+    }
+
+    // 🧼 Clear button
+    document.getElementById('clearButton').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // 🎯 Dropper Tool
+    document.getElementById('dropper').addEventListener('click', () => {
+      canvas.style.cursor = 'crosshair';
+
+      const dropperHandler = (e) => {
+        const x = e.offsetX;
+        const y = e.offsetY;
+        const pixel = ctx.getImageData(x, y, 1, 1).data;
+        currentColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        canvas.style.cursor = 'default';
+        canvas.removeEventListener('click', dropperHandler);
+      };
+
+      canvas.addEventListener('click', dropperHandler);
+    });
+
+    // 🖌️ Brush Size
+    document.getElementById('brushSize').addEventListener('change', (e) => {
+      ctx.lineWidth = parseInt(e.target.value);
+    });
+
+    // ⭐ Add Stickers
+    function addSticker(emoji) {
+      canvas.style.cursor = 'crosshair';
+
+      const handler = (e) => {
+        ctx.font = "30px Arial";
+        ctx.fillText(emoji, e.offsetX, e.offsetY);
+        canvas.style.cursor = 'default';
+        canvas.removeEventListener('click', handler);
+      };
+
+      canvas.addEventListener('click', handler);
     }
   </script>
 </body>
