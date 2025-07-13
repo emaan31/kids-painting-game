@@ -1,0 +1,323 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tranquil Words - Word Completion Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-gentle {
+            animation: pulseGentle 2s infinite;
+        }
+        
+        @keyframes pulseGentle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-20 w-32 h-32 bg-white bg-opacity-10 rounded-full floating-animation"></div>
+        <div class="absolute top-40 right-32 w-24 h-24 bg-white bg-opacity-5 rounded-full floating-animation" style="animation-delay: -2s;"></div>
+        <div class="absolute bottom-32 left-1/4 w-40 h-40 bg-white bg-opacity-5 rounded-full floating-animation" style="animation-delay: -4s;"></div>
+        <div class="absolute bottom-20 right-20 w-28 h-28 bg-white bg-opacity-10 rounded-full floating-animation" style="animation-delay: -1s;"></div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="glass-effect rounded-3xl p-8 max-w-2xl w-full shadow-2xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-semibold text-white mb-2">🌸 Tranquil Words</h1>
+            <p class="text-white text-opacity-80">Complete the words and find your zen</p>
+
+        </div>
+
+        <!-- Game Stats -->
+        <div class="flex justify-between items-center mb-6 text-white">
+            <div class="glass-effect rounded-xl px-4 py-2">
+                <span class="text-sm opacity-80">Score:</span>
+                <span id="score" class="font-semibold ml-2">0</span>
+            </div>
+            <div class="glass-effect rounded-xl px-4 py-2">
+                <span class="text-sm opacity-80">Level:</span>
+                <span id="level" class="font-semibold ml-2">1</span>
+            </div>
+            <div class="glass-effect rounded-xl px-4 py-2">
+                <span class="text-sm opacity-80">Streak:</span>
+                <span id="streak" class="font-semibold ml-2">0</span>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="text-center mb-8">
+            <div class="mb-6">
+                <div class="text-white text-opacity-60 text-sm mb-2">Complete this word:</div>
+                <div id="wordDisplay" class="text-3xl font-medium text-white mb-4 tracking-wider">
+                    <!-- Word will be displayed here -->
+                </div>
+                <div id="definition" class="text-white text-opacity-70 text-sm italic mb-6">
+                    <!-- Definition will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="mb-6">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="Type the missing letters..."
+                    class="w-full max-w-md px-6 py-3 rounded-2xl bg-white bg-opacity-20 text-white placeholder-white placeholder-opacity-50 text-center text-xl font-medium border-2 border-white border-opacity-30 focus:border-white focus:outline-none transition-all duration-300"
+                    autocomplete="off"
+                >
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4 justify-center mb-6">
+                <button 
+                    id="submitBtn" 
+                    class="px-8 py-3 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-2xl font-medium transition-all duration-300 border border-white border-opacity-30 hover:border-opacity-50"
+                >
+                    Submit ✨
+                </button>
+                <button 
+                    id="hintBtn" 
+                    class="px-8 py-3 bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded-2xl font-medium transition-all duration-300 border border-white border-opacity-30 hover:border-opacity-50"
+                >
+                    Hint 💡
+                </button>
+                <button 
+                    id="skipBtn" 
+                    class="px-8 py-3 bg-white bg-opacity-10 hover:bg-opacity-20 text-white rounded-2xl font-medium transition-all duration-300 border border-white border-opacity-30 hover:border-opacity-50"
+                >
+                    Skip ⏭️
+                </button>
+            </div>
+
+            <!-- Feedback Area -->
+            <div id="feedback" class="text-center min-h-[2rem] mb-4">
+                <!-- Feedback messages will appear here -->
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-white bg-opacity-20 rounded-full h-2 mb-4">
+                <div id="progressBar" class="bg-white h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        class TranquilWordsGame {
+            constructor() {
+                this.words = [
+                    { word: "BEAUTIFUL", missing: "BEAUT_FUL", hint: "Pleasing to look at", definition: "Having qualities that give pleasure to the senses" },
+                    { word: "PEACEFUL", missing: "PE_CEFUL", hint: "Calm and quiet", definition: "Free from disturbance; tranquil" },
+                    { word: "HARMONY", missing: "HAR_ONY", hint: "Musical agreement", definition: "A pleasing combination of elements" },
+                    { word: "SERENITY", missing: "SER_NITY", hint: "State of calm", definition: "The state of being calm and peaceful" },
+                    { word: "TRANQUIL", missing: "TRAN_UIL", hint: "Very calm", definition: "Free from disturbance; calm" },
+                    { word: "MINDFUL", missing: "MIN_FUL", hint: "Being aware", definition: "Conscious or aware of something" },
+                    { word: "BALANCE", missing: "BAL_NCE", hint: "Equal weight", definition: "A state of equilibrium" },
+                    { word: "GENTLE", missing: "GEN_LE", hint: "Soft and kind", definition: "Having a mild, kind nature" },
+                    { word: "WISDOM", missing: "WIS_OM", hint: "Deep knowledge", definition: "The quality of having experience and good judgment" },
+                    { word: "GRATITUDE", missing: "GRAT_TUDE", hint: "Being thankful", definition: "The quality of being thankful" },
+                    { word: "COMPASSION", missing: "COMP_SSION", hint: "Caring feeling", definition: "Sympathetic concern for others' suffering" },
+                    { word: "MEDITATION", missing: "MEDIT_TION", hint: "Mindful practice", definition: "Practice of focused contemplation" }
+                ];
+                
+                this.currentWordIndex = 0;
+                this.score = 0;
+                this.level = 1;
+                this.streak = 0;
+                this.hintsUsed = 0;
+                
+                this.initializeGame();
+                this.bindEvents();
+                this.displayCurrentWord();
+            }
+            
+            initializeGame() {
+                this.shuffleWords();
+                this.updateDisplay();
+            }
+            
+            shuffleWords() {
+                for (let i = this.words.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.words[i], this.words[j]] = [this.words[j], this.words[i]];
+                }
+            }
+            
+            bindEvents() {
+                document.getElementById('submitBtn').addEventListener('click', () => this.checkAnswer());
+                document.getElementById('hintBtn').addEventListener('click', () => this.showHint());
+                document.getElementById('skipBtn').addEventListener('click', () => this.skipWord());
+                document.getElementById('userInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.checkAnswer();
+                });
+                document.getElementById('userInput').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                });
+            }
+            
+            displayCurrentWord() {
+                const currentWord = this.words[this.currentWordIndex];
+                document.getElementById('wordDisplay').textContent = currentWord.missing;
+                document.getElementById('definition').textContent = currentWord.definition;
+                document.getElementById('userInput').value = '';
+                document.getElementById('userInput').focus();
+                this.clearFeedback();
+                
+                // Update progress
+                const progress = ((this.currentWordIndex + 1) / this.words.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+            
+            checkAnswer() {
+                const userAnswer = document.getElementById('userInput').value.trim().toUpperCase();
+                const currentWord = this.words[this.currentWordIndex];
+                
+                if (userAnswer === currentWord.word) {
+                    this.handleCorrectAnswer();
+                } else {
+                    this.handleIncorrectAnswer();
+                }
+            }
+            
+            handleCorrectAnswer() {
+                this.score += (10 + this.streak * 2);
+                this.streak++;
+                
+                this.showFeedback('✨ Excellent! Well done! ✨', 'text-green-300');
+                this.celebrateSuccess();
+                
+                setTimeout(() => {
+                    this.nextWord();
+                }, 1500);
+            }
+            
+            handleIncorrectAnswer() {
+                this.streak = 0;
+                this.showFeedback('🌸 Not quite right. Take a deep breath and try again. 🌸', 'text-yellow-300');
+            }
+            
+            showHint() {
+                const currentWord = this.words[this.currentWordIndex];
+                this.showFeedback(`💡 Hint: ${currentWord.hint}`, 'text-blue-300');
+                this.hintsUsed++;
+            }
+            
+            skipWord() {
+                this.streak = 0;
+                this.showFeedback('⏭️ Moving to the next word. Stay peaceful! ⏭️', 'text-purple-300');
+                setTimeout(() => {
+                    this.nextWord();
+                }, 1000);
+            }
+            
+            nextWord() {
+                this.currentWordIndex++;
+                
+                if (this.currentWordIndex >= this.words.length) {
+                    this.endGame();
+                } else {
+                    // Level up every 4 words
+                    if (this.currentWordIndex % 4 === 0) {
+                        this.level++;
+                    }
+                    
+                    this.updateDisplay();
+                    this.displayCurrentWord();
+                }
+            }
+            
+            endGame() {
+                const accuracy = Math.round(((this.words.length - this.hintsUsed) / this.words.length) * 100);
+                document.getElementById('wordDisplay').innerHTML = '🎉 Game Complete! 🎉';
+                document.getElementById('definition').innerHTML = `
+                    <div class="text-center">
+                        <div class="mb-2">Final Score: ${this.score}</div>
+                        <div class="mb-2">Accuracy: ${accuracy}%</div>
+                        <div class="mb-4">You've found your inner peace through words!</div>
+                        <button onclick="location.reload()" class="px-6 py-2 bg-white bg-opacity-30 rounded-xl text-white hover:bg-opacity-40 transition-all">
+                            🔄 Play Again
+                        </button>
+                    </div>
+                `;
+                document.getElementById('userInput').style.display = 'none';
+                document.querySelector('.flex.gap-4').style.display = 'none';
+            }
+            
+            celebrateSuccess() {
+                // Add gentle celebration animation
+                document.getElementById('wordDisplay').classList.add('pulse-gentle');
+                setTimeout(() => {
+                    document.getElementById('wordDisplay').classList.remove('pulse-gentle');
+                }, 1000);
+            }
+            
+            showFeedback(message, className) {
+                const feedback = document.getElementById('feedback');
+                feedback.textContent = message;
+                feedback.className = `text-center min-h-[2rem] mb-4 ${className} fade-in`;
+            }
+            
+            clearFeedback() {
+                document.getElementById('feedback').textContent = '';
+                document.getElementById('feedback').className = 'text-center min-h-[2rem] mb-4';
+            }
+            
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('streak').textContent = this.streak;
+            }
+        }
+        
+        // Initialize the game when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            new TranquilWordsGame();
+        });
+        
+
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95eb0a4fb7fc2490',t:'MTc1MjQzMzQwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
